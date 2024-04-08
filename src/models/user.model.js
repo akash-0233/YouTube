@@ -1,8 +1,7 @@
 import mongoose, { Schema } from "mongoose";
-// npm i jsonwebtoken
-import jwt from "jsonwebtoken1";
-//npm i bcrypt
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+
 const userSchema = new Schema(
   {
     username: {
@@ -27,21 +26,21 @@ const userSchema = new Schema(
       index: true,
     },
     avatar: {
-      type: String, //cloudinary url
+      type: String, // cloudinary url
       required: true,
     },
-    coverimage: {
-      type: String,
+    coverImage: {
+      type: String, // cloudinary url
     },
     watchHistory: [
       {
         type: Schema.Types.ObjectId,
-        re: "Video",
+        ref: "Video",
       },
     ],
     password: {
       type: String,
-      required: [true, "Password is required1"],
+      required: [true, "Password is required"],
     },
     refreshToken: {
       type: String,
@@ -52,12 +51,10 @@ const userSchema = new Schema(
   }
 );
 
-//To save incrypted password in dataBase
 userSchema.pre("save", async function (next) {
-  //Execute only if password is modified
   if (!this.isModified("password")) return next();
 
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
@@ -66,7 +63,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 };
 
 userSchema.methods.generateAccessToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id,
       email: this.email,
@@ -79,9 +76,8 @@ userSchema.methods.generateAccessToken = function () {
     }
   );
 };
-
 userSchema.methods.generateRefreshToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id,
     },
